@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="תקציב משפחתי">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>💰</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <title>מעקב תקציב משפחתי</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .budget-setup {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .budget-setup h2 {
+            margin-bottom: 15px;
+        }
+
+        .budget-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .budget-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .budget-input-group button {
+            padding: 12px 30px;
+            background: white;
+            color: #f5576c;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .budget-input-group button:hover {
+            transform: scale(1.05);
+        }
+
+        .budget-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .budget-card {
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .budget-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .budget-card.total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .budget-card.spent {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .budget-card.remaining {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .budget-card.percentage {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .budget-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+
+        .budget-card .amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .expense-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .expense-form h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .expenses-list {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .expenses-list h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .expense-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .expense-details {
+            flex: 1;
+        }
+
+        .expense-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .expense-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .expense-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f5576c;
+            margin-left: 20px;
+        }
+
+        .delete-btn {
+            padding: 8px 15px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ff3838;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .budget-card .amount {
+                font-size: 2rem;
+            }
+
+            .expense-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .expense-amount {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 מעקב תקציב משפחתי</h1>
+            <p>נהלו את התקציב שלכם בצורה חכמה ונעימה</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="budget-setup" id="budgetSetup">
+                <h2>הגדרת תקציב חודשי</h2>
+                <div class="budget-input-group">
+                    <input type="number" id="monthlyBudget" placeholder="הזן תקציב חודשי (₪)" min="0">
+                    <button onclick="setBudget()">עדכן תקציב</button>
+                </div>
+            </div>
+
+            <div class="budget-overview">
+                <div class="budget-card total">
+                    <h3>תקציב חודשי</h3>
+                    <div class="amount" id="totalBudget">₪0</div>
+                </div>
+                <div class="budget-card spent">
+                    <h3>הוצאות עד כה</h3>
+                    <div class="amount" id="totalSpent">₪0</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="spentProgress"></div>
+                    </div>
+                </div>
+                <div class="budget-card percentage">
+                    <h3>אחוז הוצאות</h3>
+                    <div class="amount" id="spentPercentage">0%</div>
+                </div>
+                <div class="budget-card remaining">
+                    <h3>נותר להוצאה</h3>
+                    <div class="amount" id="remaining">₪0</div>
+                </div>
+            </div>
+
+            <div class="expense-form">
+                <h2>הוספת הוצאה חדשה</h2>
+                <form onsubmit="addExpense(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>תיאור ההוצאה *</label>
+                            <input type="text" id="expenseDescription" required placeholder="לדוגמה: קניות בסופר">
+                        </div>
+                        <div class="form-group">
+                            <label>סכום (₪) *</label>
+                            <input type="number" id="expenseAmount" required min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>תאריך *</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>קטגוריה *</label>
+                            <select id="expenseCategory" required style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem;">
+                                <option value="">בחר קטגוריה</option>
+                                <option value="סופר">סופר</option>
+                                <option value="אוכל בחוץ">אוכל בחוץ</option>
+                                <option value="פנאי">פנאי</option>
+                                <option value="לימודים">לימודים</option>
+                                <option value="ארצי">ארצי</option>
+                                <option value="אורי">אורי</option>
+                                <option value="אחר">אחר</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>הערות</label>
+                        <textarea id="expenseNotes" placeholder="הערות נוספות (אופציונלי)"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">➕ הוסף הוצאה</button>
+                </form>
+            </div>
+
+            <div class="expenses-list">
+                <h2>רשימת הוצאות</h2>
+                <div id="expensesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if running as PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('Running as installed app');
+        }
+
+        // Service Worker Registration for offline support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch", event => { event.respondWith(fetch(event.request).catch(() => caches.match(event.request))); });')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            });
+        }
+    </script>
+
+    <script>
+        // Load data from storage
+        let budget = parseFloat(localStorage.getItem('monthlyBudget')) || 0;
+        let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+        const BUDGET_PASSWORD = "1234"; // Change this to your desired password
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('monthlyBudget').value = budget || '';
+            document.getElementById('expenseDate').valueAsDate = new Date();
+            updateDisplay();
+        });
+
+        function setBudget() {
+            const password = prompt('הזן סיסמה לעדכון תקציב:');
+            if (password !== BUDGET_PASSWORD) {
+                alert('סיסמה שגויה! רק בעל התקציב יכול לעדכן.');
+                return;
+            }
+
+            const budgetInput = document.getElementById('monthlyBudget');
+            budget = parseFloat(budgetInput.value) || 0;
+            localStorage.setItem('monthlyBudget', budget);
+            updateDisplay();
+            alert('התקציב עודכן בהצלחה!');
+        }
+
+        function addExpense(event) {
+            event.preventDefault();
+
+            const expense = {
+                id: Date.now(),
+                description: document.getElementById('expenseDescription').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                date: document.getElementById('expenseDate').value,
+                category: document.getElementById('expenseCategory').value,
+                notes: document.getElementById('expenseNotes').value
+            };
+
+            expenses.push(expense);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+
+            // Reset form
+            event.target.reset();
+            document.getElementById('expenseDate').valueAsDate = new Date();
+
+            updateDisplay();
+        }
+
+        function deleteExpense(id) {
+            if (confirm('האם למחוק הוצאה זו?')) {
+                expenses = expenses.filter(exp => exp.id !== id);
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            // Calculate total spent
+            const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const remaining = budget - totalSpent;
+            const spentPercentage = budget > 0 ? (totalSpent / budget) * 100 : 0;
+
+            // Update budget cards
+            document.getElementById('totalBudget').textContent = `₪${budget.toLocaleString('he-IL', {minimumFractionDigits: 2})}`;
+            document.getElementById('totalSpent').textContent = `₪${totalSpent.toLocaleString('he-IL', {minimumFractionDigits: 2})}`;
+            document.getElementById('remaining').textContent = `₪${remaining.toLocaleString('he-IL', {minimumFractionDigits: 2})}`;
+            document.getElementById('spentPercentage').textContent = `${spentPercentage.toFixed(1)}%`;
+            
+            // Update progress bar
+            document.getElementById('spentProgress').style.width = `${Math.min(spentPercentage, 100)}%`;
+
+            // Update remaining card color based on budget status
+            const remainingCard = document.querySelector('.budget-card.remaining');
+            if (remaining < 0) {
+                remainingCard.style.background = 'linear-gradient(135deg, #ff4757 0%, #ff6348 100%)';
+            } else if (remaining < budget * 0.2) {
+                remainingCard.style.background = 'linear-gradient(135deg, #ffa502 0%, #ff6348 100%)';
+            } else {
+                remainingCard.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+            }
+
+            // Update percentage card color based on spent percentage
+            const percentageCard = document.querySelector('.budget-card.percentage');
+            if (spentPercentage >= 100) {
+                percentageCard.style.background = 'linear-gradient(135deg, #ff4757 0%, #ff6348 100%)';
+            } else if (spentPercentage >= 80) {
+                percentageCard.style.background = 'linear-gradient(135deg, #ffa502 0%, #ff6348 100%)';
+            } else {
+                percentageCard.style.background = 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
+            }
+
+            // Display expenses list
+            const expensesList = document.getElementById('expensesList');
+            
+            if (expenses.length === 0) {
+                expensesList.innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <p>עדיין לא הוספתם הוצאות</p>
+                        <p>התחילו להזין הוצאות כדי לעקוב אחרי התקציב</p>
+                    </div>
+                `;
+            } else {
+                // Sort expenses by date (newest first)
+                const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                expensesList.innerHTML = sortedExpenses.map(expense => {
+                    const date = new Date(expense.date);
+                    const formattedDate = date.toLocaleDateString('he-IL', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    });
+
+                    return `
+                        <div class="expense-item">
+                            <div class="expense-details">
+                                <div class="expense-title">${expense.description}</div>
+                                <div class="expense-meta">
+                                    📅 ${formattedDate}
+                                    ${expense.category ? ` • 🏷️ ${expense.category}` : ''}
+                                    ${expense.notes ? `<br>📝 ${expense.notes}` : ''}
+                                </div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteExpense(${expense.id})">🗑️</button>
+                            <div class="expense-amount">₪${expense.amount.toLocaleString('he-IL', {minimumFractionDigits: 2})}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    </script>
+</body>
+</html>
